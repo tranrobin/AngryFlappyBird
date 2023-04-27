@@ -94,6 +94,10 @@ public class AngryFlappyBird extends Application {
         DEF.startButton.setTranslateY(10);
         difficultyMenu.setTranslateX(10);
         difficultyMenu.setTranslateY(30);
+        
+        VBox gameMenu = new VBox()
+        
+        
        
     }
 
