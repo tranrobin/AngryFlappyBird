@@ -36,11 +36,20 @@ public class Defines {
     
     // coefficients related to the pipes
     final int PIPE_WIDTH = 100;
-    final int PIPE_HEIGHT = 210; //300
+    final int PIPE_HEIGHT = 210;
     final int PIPE_MAX_HEIGHT = 10;
     final int PIPE_MIN_HEIGHT = -120;
     final int PIPE_GAP = 300;
     final int PIPE_COUNT = 2;
+    
+    //coefficients related to avocado
+    final int AVOCADO_WIDTH = 100;
+    final int AVOCADO_HEIGHT = 100;
+    final int AVOCADO_COUNT = 2;
+    
+    // coefficients related to carrot
+    final int CARROT_WIDTH = 100;
+    final int CARROT_HEIGHT = 100;
     
     // coefficients related to score display
     final int SCORE_POS_X = 10;
@@ -56,11 +65,13 @@ public class Defines {
     final double NANOSEC_TO_SEC = 1.0 / 1000000000.0;
     final double TRANSITION_TIME = 0.1;
     final int TRANSITION_CYCLE = 2;
+    final int BACKGROUND_SHIFT_TIME = 10;
     
     // coefficients related to media display
     final String STAGE_TITLE = "Angry Flappy Bird";
 	private final String IMAGE_DIR = "../resources/images/";
-    final String[] IMAGE_FILES = {"background","koya0", "koya1", "koya2", "koya3", "pipe0", "pipe1", "floor"};
+    final String[] IMAGE_FILES = {"background","koya0", "koya1", "koya2", "koya3", 
+            "pipe0", "pipe1", "floor", "avocado", "yellowavocado", "carrot", "background-night"};
 
 //    final HashMap<String, Sound> AUDIO = new HashMap<String, Sound>();
     final HashMap<String, ImageView> IMVIEW = new HashMap<String, ImageView>();
@@ -78,7 +89,13 @@ public class Defines {
 		// initialize images
 		for(int i=0; i<IMAGE_FILES.length; i++) {
 			Image img;
-			if (i == 7) {
+			if (i == 10) {
+			    img = new Image(pathImage(IMAGE_FILES[i]), CARROT_WIDTH, CARROT_HEIGHT, false, false);
+			}
+			else if (i == 8 || i == 9) {
+			    img = new Image(pathImage(IMAGE_FILES[i]), AVOCADO_WIDTH, AVOCADO_HEIGHT, false, false);
+			}
+			else if (i == 7) {
 				img = new Image(pathImage(IMAGE_FILES[i]), FLOOR_WIDTH, FLOOR_HEIGHT, false, false);
 			}
 			else if (i == 5 || i == 6) {
