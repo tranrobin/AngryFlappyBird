@@ -11,47 +11,48 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 public class Defines {
-    
-	// dimension of the GUI application
+
+
+    // dimension of the GUI application
     final int APP_HEIGHT = 600;
     final int APP_WIDTH = 600;
     final int SCENE_HEIGHT = 570;
     final int SCENE_WIDTH = 400;
 
-    // coefficients related to koya
-    final int KOYA_WIDTH = 70;
-    final int KOYA_HEIGHT = 70;
+
+    // coefficients related to the koya
+    final int KOYA_WIDTH = 80;
+    final int KOYA_HEIGHT = 80;
     final int KOYA_POS_X = 70;
     final int KOYA_POS_Y = 200;
-    final int KOYA_DROP_TIME = 300000000;  	// the elapsed time threshold before koya starts dropping
-    final int KOYA_DROP_VEL = 300;    		// koya drop velocity
+    final int KOYA_DROP_TIME = 300000000;   // the elapsed time threshold before the koya starts dropping
+    final int KOYA_DROP_VEL = 300;          // the koya drop velocity
     final int KOYA_FLY_VEL = -40;
     final int KOYA_IMG_LEN = 4;
     final int KOYA_IMG_PERIOD = 5;
-    
+
     // coefficients related to the floors
     final int FLOOR_WIDTH = 400;
-    final int FLOOR_HEIGHT = 100;
+    final int FLOOR_HEIGHT = 80;
     final int FLOOR_COUNT = 2;
-    
+
     // coefficients related to the pipes
     final int PIPE_WIDTH = 100;
     final int PIPE_HEIGHT = 210;
-    final int PIPE_MAX_HEIGHT = 10;
-    final int PIPE_MIN_HEIGHT = -120;
     final int PIPE_GAP = 300;
     final int PIPE_COUNT = 2;
-    
-    //coefficients related to avocado
+    final int PIPE_MIN_HEIGHT = -120;
+    final int PIPE_MAX_HEIGHT = 0;
+    final int PIPE_POS_X = 500;
+
     final int AVOCADO_WIDTH = 100;
     final int AVOCADO_HEIGHT = 100;
     final int AVOCADO_COUNT = 2;
-    
-    // coefficients related to carrot
+
     final int CARROT_WIDTH = 100;
     final int CARROT_HEIGHT = 100;
-    
-    // coefficients related to score display
+
+ // coefficients related to score display
     final int SCORE_POS_X = 10;
     final int SCORE_POS_Y = 30;   
     
@@ -73,7 +74,7 @@ public class Defines {
     
     // coefficients related to media display
     final String STAGE_TITLE = "Angry Flappy Bird";
-	private final String IMAGE_DIR = "../resources/images/";
+    private final String IMAGE_DIR = "../resources/images/";
     final String[] IMAGE_FILES = {"background","koya0", "koya1", "koya2", "koya3", 
             "pipe0", "pipe1", "floor", "avocado", "yellowavocado", "carrot", "background-night", "koya"};
 
@@ -86,6 +87,9 @@ public class Defines {
     
     //nodes on the scene graph
     Button startButton;
+    Button easyLevelButton;
+    Button mediumLevelButton;
+    Button hardLevelButton;
     
     // constructor
 	Defines() {
@@ -157,9 +161,9 @@ public class Defines {
     	String fullpath = getClass().getResource(IMAGE_DIR+filepath+".png").toExternalForm();
     	return fullpath;
     }
-	
-	public Image resizeImage(String filepath, int width, int height) {
-    	IMAGE.put(filepath, new Image(pathImage(filepath), width, height, false, false));
-    	return IMAGE.get(filepath);
+    
+    public Image resizeImage(String filepath, int width, int height) {
+        IMAGE.put(filepath, new Image(pathImage(filepath), width, height, false, false));
+        return IMAGE.get(filepath);
     }
 }
