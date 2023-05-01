@@ -59,6 +59,10 @@ public class Defines {
     final int LIVES_POS_X = 280;
     final int LIVES_POS_Y = 530;  
     
+    // coefficients related to timer display
+    final int TIMER_POS_X = 10;
+    final int TIMER_POS_Y = 100;
+    
     // coefficients related to time
     final int SCENE_SHIFT_TIME = 5;
     final double SCENE_SHIFT_INCR = -0.4;
@@ -71,13 +75,13 @@ public class Defines {
     final String STAGE_TITLE = "Angry Flappy Bird";
 	private final String IMAGE_DIR = "../resources/images/";
     final String[] IMAGE_FILES = {"background","koya0", "koya1", "koya2", "koya3", 
-            "pipe0", "pipe1", "floor", "avocado", "yellowavocado", "carrot", "background-night"};
+            "pipe0", "pipe1", "floor", "avocado", "yellowavocado", "carrot", "background-night", "koya"};
 
 //    final HashMap<String, Sound> AUDIO = new HashMap<String, Sound>();
     final HashMap<String, ImageView> IMVIEW = new HashMap<String, ImageView>();
     final HashMap<String, Image> IMAGE = new HashMap<String, Image>();
     final Text SCORE_LABEL = new Text("0");
-    final Text TIMER_LABEL = new Text("5 secs to go");
+    final Text TIMER_LABEL = new Text("");
     final Text LIVES_LABEL = new Text("3 lives left");
     
     //nodes on the scene graph
@@ -89,7 +93,10 @@ public class Defines {
 		// initialize images
 		for(int i=0; i<IMAGE_FILES.length; i++) {
 			Image img;
-			if (i == 10) {
+			if (i == 12) {
+	             img = new Image(pathImage(IMAGE_FILES[i]), KOYA_WIDTH+40, KOYA_HEIGHT+5, false, false);
+			}
+			else if (i == 10) {
 			    img = new Image(pathImage(IMAGE_FILES[i]), CARROT_WIDTH, CARROT_HEIGHT, false, false);
 			}
 			else if (i == 8 || i == 9) {
@@ -135,7 +142,15 @@ public class Defines {
 		LIVES_LABEL.setStrokeWidth(0.5);
 		LIVES_LABEL.setStroke(Color.BLACK);
 		LIVES_LABEL.setLayoutX(LIVES_POS_X);
-		LIVES_LABEL.setLayoutY(LIVES_POS_Y);		
+		LIVES_LABEL.setLayoutY(LIVES_POS_Y);	
+		
+		// timer display
+		TIMER_LABEL.setFont(Font.font ("Verdana", FontWeight.BOLD, 18)); 
+		TIMER_LABEL.setFill(Color.CORAL);
+		TIMER_LABEL.setStrokeWidth(1);
+		TIMER_LABEL.setStroke(Color.BLACK);
+		TIMER_LABEL.setLayoutX(TIMER_POS_X);
+		TIMER_LABEL.setLayoutY(TIMER_POS_Y);
 	}
 	
 	public String pathImage(String filepath) {

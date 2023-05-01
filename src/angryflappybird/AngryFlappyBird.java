@@ -29,7 +29,7 @@ public class AngryFlappyBird extends Application {
     private Defines DEF = new Defines();
 
     // time related attributes
-    private long clickTime, startTime, elapsedTime, backgroundShiftTime;   
+    private long clickTime, startTime, elapsedTime, backgroundShiftTime, hitTime;   
     private AnimationTimer timer;
 
     // counters
@@ -110,6 +110,10 @@ public class AngryFlappyBird extends Application {
     private void updateLivesLabel(int lives) {
         DEF.LIVES_LABEL.setText(Integer.toString(lives) + " lives left");
     }
+    
+//    private void updateTimerLabel(int time) {
+//        DEF.TIMER_LABEL.setText(Integer.toString(time) + " secs to go");
+//    }
 
     //update scores
     private void updateScore() {
@@ -125,19 +129,11 @@ public class AngryFlappyBird extends Application {
                 avocados.get(0).setPositionXY(pipes.get(2).getPositionX(), 1000);
                 GET_AVOCADO = false;
 
-            } else if (GET_GOLDEN) {
-                SCORE_COUNTER+= 7;
-                avocados.get(1).setPositionXY(pipes.get(2).getPositionX(), 1000);
-                GET_GOLDEN = false;
             }
-            if (CARROT_GET_AVOCADO) {
-                SCORE_COUNTER-= 3;
+            if (CARROT_GET_AVOCADO || CARROT_GET_GOLDEN) {
+                SCORE_COUNTER-= 5;
                 avocados.get(0).setPositionXY(pipes.get(2).getPositionX(), 1000);
                 CARROT_GET_AVOCADO = false;
-            } else if (CARROT_GET_GOLDEN) {
-                SCORE_COUNTER-= 5;
-                avocados.get(1).setPositionXY(pipes.get(2).getPositionX(), 1000);
-                CARROT_GET_GOLDEN = false;
             }
         }
         updateScoreLabel(SCORE_COUNTER);
@@ -183,7 +179,7 @@ public class AngryFlappyBird extends Application {
             // create the game scene
             gameScene = new Group();
             gameScene.getChildren().addAll(background, canvas, 
-                    DEF.SCORE_LABEL, DEF.LIVES_LABEL);
+                    DEF.SCORE_LABEL, DEF.LIVES_LABEL, DEF.TIMER_LABEL);
         }
 
         // initialize floor
@@ -208,6 +204,7 @@ public class AngryFlappyBird extends Application {
         backgroundShiftTime = DEF.BACKGROUND_SHIFT_TIME;
         timer = new MyTimer();
         timer.start();
+        hitTime = 0;
 
         // initialize pipes
         int posX = 0;
@@ -241,7 +238,7 @@ public class AngryFlappyBird extends Application {
         avocados.add(golden);
         
         //initialize carrot
-        Sprite carrot = new Sprite(posX, -150, DEF.IMAGE.get("carrot"));
+        Sprite carrot = new Sprite(posX, -170, DEF.IMAGE.get("carrot"));
         carrot.setVelocity(DEF.SCENE_SHIFT_INCR, 0.2);
         carrot.render(gc);
         carrots.add(carrot);
@@ -273,9 +270,13 @@ public class AngryFlappyBird extends Application {
 
                 // step3: update koya
                 moveKoya();
-                checkCollision();
                 
-                // step4: update score and change background
+                // step4: check collision
+                if (!GET_GOLDEN) {
+                    checkCollision();
+                }
+                
+                // step5: update score and change background
                 updateScore();
                 changeBackground();
             }
@@ -321,19 +322,39 @@ public class AngryFlappyBird extends Application {
         private void moveKoya() {
 
             long diffTime = System.nanoTime() - clickTime;
-
+            
+            long now = System.nanoTime();
+            float seconds = (now - hitTime)/1000000000;
+            
+            if (GET_GOLDEN && seconds <= 6) {
+                int secondsLeft = 6 - (int)seconds;
+                DEF.TIMER_LABEL.setText(Integer.toString(secondsLeft) + " secs to go");
+                koya.setImage(DEF.IMAGE.get("koya"));
+                koya.setVelocity(0,-10);
+                if (seconds == 6) {
+                    GET_GOLDEN = false;
+                    DEF.TIMER_LABEL.setText("");
+                }
+            }
+            
             // koya flies upward with animation
-            if (CLICKED && diffTime <= DEF.KOYA_DROP_TIME) {
-
+            else if (CLICKED && diffTime <= DEF.KOYA_DROP_TIME) {
                 int imageIndex = Math.floorDiv(counter++, DEF.KOYA_IMG_PERIOD);
                 imageIndex = Math.floorMod(imageIndex, DEF.KOYA_IMG_LEN);
                 koya.setImage(DEF.IMAGE.get("koya"+String.valueOf(imageIndex)));
                 koya.setVelocity(0, DEF.KOYA_FLY_VEL);
             }
+            
             // koya drops after a period of time without button click
             else {
                 koya.setVelocity(0, DEF.KOYA_DROP_VEL); 
                 CLICKED = false;
+            }
+            
+            for (Sprite carrot : carrots) {
+                if (koya.intersectsSprite(carrot)) {
+                    koya.setVelocity(-70,70);
+                }
             }
 
             // render koya on GUI
@@ -348,13 +369,10 @@ public class AngryFlappyBird extends Application {
             if (avocado.getPositionX() <= - DEF.AVOCADO_WIDTH && golden.getPositionX() <= - DEF.AVOCADO_WIDTH) {
                 
                 int pipeIndex = (int) (Math.random() * 2) + 2;
-//                System.out.println(pipeIndex);
                 double nextX = pipes.get(pipeIndex).getPositionX();
                 double nextY = pipes.get(pipeIndex).getPositionY() - DEF.AVOCADO_HEIGHT;
                 
                 int avocadoIndex = (int) Math.round(Math.random());
-
-                System.out.println(avocadoIndex);
                 
                 if (avocadoIndex == 0)
                     avocado.setPositionXY(nextX, nextY);
@@ -368,7 +386,11 @@ public class AngryFlappyBird extends Application {
             golden.render(gc);
             
             GET_AVOCADO = GET_AVOCADO || koya.intersectsSprite(avocado);
-            GET_GOLDEN = GET_GOLDEN || koya.intersectsSprite(golden);
+            if (koya.intersectsSprite(golden)) {
+                GET_GOLDEN = true;
+                avocados.get(1).setPositionXY(pipes.get(2).getPositionX(), 1000);
+                hitTime = System.nanoTime();
+            }
         }
         
         private void moveCarrot() {
