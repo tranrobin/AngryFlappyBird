@@ -5,13 +5,11 @@ import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -46,15 +44,14 @@ public class AngryFlappyBird extends Application {
     private ArrayList<Sprite> carrots;
 
     // game flags
-    private boolean CLICKED, GAME_START, GAME_OVER, AUTOPILOT; 
+    private boolean CLICKED, GAME_START, GAME_OVER; 
     private boolean HIT_PIPE, GET_AVOCADO, GET_GOLDEN, CARROT_GET_AVOCADO, CARROT_GET_GOLDEN;
 
     // scene graphs
-    private Group gameScene;     // the left half of the scene
-    private VBox gameControl;    // the right half of the GUI (control)
-    ChoiceBox<String> difficultyMenu = new ChoiceBox<>();
-    private GraphicsContext gc;     
-
+    private Group gameScene;	 // the left half of the scene
+    private VBox gameControl;	 // the right half of the GUI (control)
+    private GraphicsContext gc;		
+    
     private ImageView background;
 
     // the mandatory main method 
@@ -89,56 +86,10 @@ public class AngryFlappyBird extends Application {
     private void resetGameControl() {
 
         DEF.startButton.setOnMouseClicked(this::mouseClickHandler);
-        difficultyMenu.getItems().addAll("Easy", "Medium", "Difficult");
-        difficultyMenu.setValue("Easy");
-
-        ImageView avocadoImage = DEF.IMVIEW.get("avocado");
-        ImageView goldenImage = DEF.IMVIEW.get("yellowavocado");
-        ImageView carrotImage = DEF.IMVIEW.get("carrot");
-
-        // set size for all images
-        avocadoImage.setFitWidth(70);
-        avocadoImage.setFitHeight(70);
-        goldenImage.setFitWidth(70);
-        goldenImage.setFitHeight(70);
-        carrotImage.setFitWidth(70);
-        carrotImage.setFitHeight(70);
-
-        HBox avocadoDes = new HBox();
-        Text avocado = new Text("Add 5 points");
-        avocadoDes.setAlignment(Pos.CENTER_LEFT);
-        avocadoDes.getChildren().addAll(avocadoImage, avocado);
-
-        HBox goldenDes = new HBox();
-        Text golden = new Text("Let you snooze");
-        goldenDes.setAlignment(Pos.CENTER_LEFT);
-        goldenDes.getChildren().addAll(goldenImage, golden);
-
-        HBox carrotDes = new HBox();
-        Text carrot = new Text("Hit and die!");
-        carrotDes.setAlignment(Pos.CENTER_LEFT);
-        carrotDes.getChildren().addAll(carrotImage, carrot);
 
         gameControl = new VBox();
-        gameControl.getChildren().addAll(DEF.startButton, difficultyMenu, avocadoDes, goldenDes, carrotDes);
-
-        DEF.startButton.setTranslateX(10);
-        DEF.startButton.setTranslateY(10);
-        difficultyMenu.setTranslateX(10);
-        difficultyMenu.setTranslateY(30);
-
-        avocadoDes.setTranslateX(0);
-        avocadoDes.setTranslateY(100);
-
-        goldenDes.setTranslateX(0);
-        goldenDes.setTranslateY(120);
-
-        carrotDes.setTranslateX(3);
-        carrotDes.setTranslateY(140);
+        gameControl.getChildren().addAll(DEF.startButton);
     }
-
-
-
 
     private void mouseClickHandler(MouseEvent e) {
         if (GAME_OVER) {
@@ -177,18 +128,19 @@ public class AngryFlappyBird extends Application {
                 SCORE_COUNTER+= 5;
                 avocados.get(0).setPositionXY(pipes.get(2).getPositionX(), 1000);
                 GET_AVOCADO = false;
-            } else if (GET_GOLDEN) {
-                AUTOPILOT = true;
-                SCORE_COUNTER+= 7;
-                avocados.get(1).setPositionXY(pipes.get(2).getPositionX(), 1000);
-                GET_GOLDEN = false;
+
+            }
+            if (CARROT_GET_AVOCADO || CARROT_GET_GOLDEN) {
+                SCORE_COUNTER-= 5;
+                avocados.get(0).setPositionXY(pipes.get(2).getPositionX(), 1000);
+                CARROT_GET_AVOCADO = false;
             }
         }
         updateScoreLabel(SCORE_COUNTER);
     }
 
     private void resetGameScene(boolean firstEntry) {
-
+        
         if(GAME_OVER) {
             SCORE_COUNTER = 0;
             LIVES_COUNTER = 3;
@@ -203,7 +155,6 @@ public class AngryFlappyBird extends Application {
         HIT_PIPE = false;
         GET_AVOCADO = false;
         GET_GOLDEN = false;
-        AUTOPILOT = false;
         CARROT_GET_AVOCADO = false;
         CARROT_GET_GOLDEN = false;
         floors = new ArrayList<>();
@@ -212,12 +163,12 @@ public class AngryFlappyBird extends Application {
         carrots = new ArrayList<>();
 
         if(firstEntry) {
-
+            
             SCORE_COUNTER = 0;
             LIVES_COUNTER = 3;
             updateScoreLabel(0);
             updateLivesLabel(3);
-
+            
             // create two canvases
             Canvas canvas = new Canvas(DEF.SCENE_WIDTH, DEF.SCENE_HEIGHT);
             gc = canvas.getGraphicsContext2D();
@@ -274,7 +225,7 @@ public class AngryFlappyBird extends Application {
             pipes.add(bottomPipe);       
 
         }
-
+        
         // initialize avocados
         Sprite avocado = new Sprite(posX - 300, pipes.get(1).getPositionY() - DEF.AVOCADO_HEIGHT, DEF.IMAGE.get("avocado"));
         avocado.setVelocity(DEF.SCENE_SHIFT_INCR, 0);
@@ -285,13 +236,13 @@ public class AngryFlappyBird extends Application {
         golden.setVelocity(DEF.SCENE_SHIFT_INCR, 0);
         golden.render(gc);
         avocados.add(golden);
-
+        
         //initialize carrot
         Sprite carrot = new Sprite(posX, -170, DEF.IMAGE.get("carrot"));
         carrot.setVelocity(DEF.SCENE_SHIFT_INCR, 0.2);
         carrot.render(gc);
         carrots.add(carrot);
-
+        
     }
 
     //timer stuff
@@ -300,7 +251,7 @@ public class AngryFlappyBird extends Application {
         int counter = 0;
 
         @Override
-        public void handle(long now) {           
+        public void handle(long now) {   		 
             // time keeping
             elapsedTime = now - startTime;
             startTime = now;
@@ -312,7 +263,7 @@ public class AngryFlappyBird extends Application {
                 // step1: update floor and pipes
                 moveFloor();
                 movePipe();
-
+                
                 //step2 update avocados and carrots
                 moveAvocado();
                 moveCarrot();
@@ -324,6 +275,7 @@ public class AngryFlappyBird extends Application {
                 if (!GET_GOLDEN) {
                     checkCollision();
                 }
+                
                 // step5: update score and change background
                 updateScore();
                 changeBackground();
@@ -366,9 +318,11 @@ public class AngryFlappyBird extends Application {
             }
         }
 
+
         private void moveKoya() {
 
-            long diffTime = System.nanoTime() - clickTime;            
+            long diffTime = System.nanoTime() - clickTime;
+            
             long now = System.nanoTime();
             float seconds = (now - hitTime)/1000000000;
             
@@ -382,6 +336,7 @@ public class AngryFlappyBird extends Application {
                     DEF.TIMER_LABEL.setText("");
                 }
             }
+            
             // koya flies upward with animation
             else if (CLICKED && diffTime <= DEF.KOYA_DROP_TIME) {
                 int imageIndex = Math.floorDiv(counter++, DEF.KOYA_IMG_PERIOD);
@@ -402,20 +357,17 @@ public class AngryFlappyBird extends Application {
                 }
             }
 
-            // render koya on GUI during normal mode
-
+            // render koya on GUI
             koya.update(elapsedTime * DEF.NANOSEC_TO_SEC);
             koya.render(gc);
-
         }
-
-
+        
         private void moveAvocado() {
             Sprite avocado = avocados.get(0);
             Sprite golden = avocados.get(1);
-
+            
             if (avocado.getPositionX() <= - DEF.AVOCADO_WIDTH && golden.getPositionX() <= - DEF.AVOCADO_WIDTH) {
-
+                
                 int pipeIndex = (int) (Math.random() * 2) + 2;
                 double nextX = pipes.get(pipeIndex).getPositionX();
                 double nextY = pipes.get(pipeIndex).getPositionY() - DEF.AVOCADO_HEIGHT;
@@ -424,15 +376,15 @@ public class AngryFlappyBird extends Application {
                 
                 if (avocadoIndex == 0)
                     avocado.setPositionXY(nextX, nextY);
-                else if (avocadoIndex >= 0.5)
+                else if (avocadoIndex == 1)
                     golden.setPositionXY(nextX, nextY);
             }
-
+            
             avocado.update(DEF.SCENE_SHIFT_TIME);
             avocado.render(gc);
             golden.update(DEF.SCENE_SHIFT_TIME);
             golden.render(gc);
-
+            
             GET_AVOCADO = GET_AVOCADO || koya.intersectsSprite(avocado);
             if (koya.intersectsSprite(golden)) {
                 GET_GOLDEN = true;
@@ -440,63 +392,38 @@ public class AngryFlappyBird extends Application {
                 hitTime = System.nanoTime();
             }
         }
-
+        
         private void moveCarrot() {
             Sprite carrot = carrots.get(0);
-
-            String difficulty = difficultyMenu.getValue();
-
+            
             if (carrot.getPositionX() <= - DEF.CARROT_WIDTH) {
                 double random = (Math.random());
                 double nextX = 0; 
                 double nextY = 0;
-
-                if (difficulty.equals("Easy")) {
-                    if (random > 0.7) {
-                        nextX =  pipes.get(2).getPositionX();
-                        nextY =  pipes.get(2).getPositionY() - 100;
-                        carrot.setPositionXY(nextX, nextY);
-                    } else if (random <= 0.7) {
-                        nextX = pipes.get(2).getPositionX();
-                        nextY = 1000;
-                        carrot.setPositionXY(nextX, nextY);
-                    }
+                
+                if (random > 0.6) {
+                    nextX =  pipes.get(2).getPositionX();
+                    nextY = -130;
+                    carrot.setPositionXY(nextX, nextY);
+                } else if (random <= 0.6) {
+                    nextX = pipes.get(2).getPositionX();
+                    nextY = 1000;
+                    carrot.setPositionXY(nextX, nextY);
                 }
-                else if (difficulty.equals("Medium")) {
-                    if (random > 0.2) {
-                        nextX =  pipes.get(2).getPositionX();
-                        nextY =  pipes.get(2).getPositionY();
-                        carrot.setPositionXY(nextX, nextY);
-                    } else if (random <= 0.2) {
-                        nextX = pipes.get(2).getPositionX();
-                        nextY = 1000;
-                        carrot.setPositionXY(nextX, nextY);
-                    }
-                }
-                else if (difficulty.equals("Difficult")) {
-                    if (random > 0.1) {
-                        nextX =  pipes.get(2).getPositionX();
-                        nextY =  0 ;
-                        carrot.setPositionXY(nextX, nextY);
-                    } else if (random <= 0.1) {
-                        nextX = pipes.get(2).getPositionX();
-                        nextY = 1000;
-                        carrot.setPositionXY(nextX, nextY);
-                    }
-                }        
             }
+            
             carrot.update(DEF.SCENE_SHIFT_TIME);
             carrot.render(gc);
         }
-
-
+        
+        
 
         public void checkCollision() {
             // check floor collision  
             for (Sprite floor: floors) {
                 GAME_OVER = GAME_OVER || koya.intersectsSprite(floor);
             }
-
+            
             // check carrot collision
             for (Sprite carrot : carrots) {
                 GAME_OVER = GAME_OVER || koya.intersectsSprite(carrot);
@@ -517,7 +444,7 @@ public class AngryFlappyBird extends Application {
                     }            
                 }
             }
-
+            
             // end the game when koya hit floors or hit pipes more than 3 times
             if (GAME_OVER) {
                 showHitEffect(); 
