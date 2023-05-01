@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -20,6 +21,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -29,23 +31,31 @@ public class AngryFlappyBird extends Application {
     private Defines DEF = new Defines();
 
     // time related attributes
-    private long clickTime, startTime, elapsedTime;   
+    private long clickTime, startTime, elapsedTime, backgroundShiftTime;   
     private AnimationTimer timer;
 
+    // counters
+    private int SCORE_COUNTER;
+    private int LIVES_COUNTER;
+
     // game components
-    private Sprite blob;
+    private Sprite koya;
     private ArrayList<Sprite> floors;
     private ArrayList<Sprite> pipes;
     private ArrayList<Sprite> avocados;
     private ArrayList<Sprite> carrots;
 
     // game flags
-    private boolean CLICKED, GAME_START, GAME_OVER, PIPE_COLLISION;
+    private boolean CLICKED, GAME_START, GAME_OVER, AUTOPILOT; 
+    private boolean HIT_PIPE, GET_AVOCADO, GET_GOLDEN, CARROT_GET_AVOCADO, CARROT_GET_GOLDEN;
 
     // scene graphs
-    private Group gameScene;	 // the left half of the scene
-    private VBox gameControl;	 // the right half of the GUI (control)
-    private GraphicsContext gc;		
+    private Group gameScene;     // the left half of the scene
+    private VBox gameControl;    // the right half of the GUI (control)
+    ChoiceBox<String> difficultyMenu = new ChoiceBox<>();
+    private GraphicsContext gc;     
+
+    private ImageView background;
 
     // the mandatory main method 
     public static void main(String[] args) {
@@ -79,27 +89,56 @@ public class AngryFlappyBird extends Application {
     private void resetGameControl() {
 
         DEF.startButton.setOnMouseClicked(this::mouseClickHandler);
-        VBox difficultyMenu = new VBox(DEF.easyLevelButton, DEF.mediumLevelButton, DEF.hardLevelButton);
-        DEF.easyLevelButton.setPrefWidth(100);
-        DEF.mediumLevelButton.setPrefWidth(100);
-        DEF.hardLevelButton.setPrefWidth(100);
-        DEF.easyLevelButton.setAlignment(Pos.BASELINE_LEFT);
-        DEF.mediumLevelButton.setAlignment(Pos.BASELINE_LEFT);
-        DEF.hardLevelButton.setAlignment(Pos.BASELINE_LEFT);
+        difficultyMenu.getItems().addAll("Easy", "Medium", "Difficult");
+        difficultyMenu.setValue("Easy");
+
+        ImageView avocadoImage = DEF.IMVIEW.get("avocado");
+        ImageView goldenImage = DEF.IMVIEW.get("yellowavocado");
+        ImageView carrotImage = DEF.IMVIEW.get("carrot");
+
+        // set size for all images
+        avocadoImage.setFitWidth(70);
+        avocadoImage.setFitHeight(70);
+        goldenImage.setFitWidth(70);
+        goldenImage.setFitHeight(70);
+        carrotImage.setFitWidth(70);
+        carrotImage.setFitHeight(70);
+
+        HBox avocadoDes = new HBox();
+        Text avocado = new Text("Add 5 points");
+        avocadoDes.setAlignment(Pos.CENTER_LEFT);
+        avocadoDes.getChildren().addAll(avocadoImage, avocado);
+
+        HBox goldenDes = new HBox();
+        Text golden = new Text("Let you snooze");
+        goldenDes.setAlignment(Pos.CENTER_LEFT);
+        goldenDes.getChildren().addAll(goldenImage, golden);
+
+        HBox carrotDes = new HBox();
+        Text carrot = new Text("Hit and die!");
+        carrotDes.setAlignment(Pos.CENTER_LEFT);
+        carrotDes.getChildren().addAll(carrotImage, carrot);
 
         gameControl = new VBox();
-        gameControl.getChildren().addAll(DEF.startButton);
-        gameControl.getChildren().addAll(difficultyMenu);
+        gameControl.getChildren().addAll(DEF.startButton, difficultyMenu, avocadoDes, goldenDes, carrotDes);
+
         DEF.startButton.setTranslateX(10);
         DEF.startButton.setTranslateY(10);
         difficultyMenu.setTranslateX(10);
         difficultyMenu.setTranslateY(30);
-        
-        VBox gameMenu = new VBox()
-        
-        
-       
+
+        avocadoDes.setTranslateX(0);
+        avocadoDes.setTranslateY(100);
+
+        goldenDes.setTranslateX(0);
+        goldenDes.setTranslateY(120);
+
+        carrotDes.setTranslateX(3);
+        carrotDes.setTranslateY(140);
     }
+
+
+
 
     private void mouseClickHandler(MouseEvent e) {
         if (GAME_OVER) {
@@ -112,27 +151,90 @@ public class AngryFlappyBird extends Application {
         CLICKED = true;
     }
 
+    // update labels 
+    private void updateScoreLabel(int score) {
+        DEF.SCORE_LABEL.setText(Integer.toString(score));
+    }
+
+    private void updateLivesLabel(int lives) {
+        DEF.LIVES_LABEL.setText(Integer.toString(lives) + " lives left");
+    }
+
+    //update scores
+    private void updateScore() {
+        if (!HIT_PIPE) {
+            for (int i = 0; i < 4; i++) {
+                if (pipes.get(i).getPositionX() + 10 == koya.getPositionX()) {
+                    SCORE_COUNTER+=1;
+                    break;
+                }
+            }
+            if (GET_AVOCADO) {
+                SCORE_COUNTER+= 5;
+                avocados.get(0).setPositionXY(pipes.get(2).getPositionX(), 1000);
+                GET_AVOCADO = false;
+
+            } else if (GET_GOLDEN) {
+                AUTOPILOT = true;
+                SCORE_COUNTER+= 7;
+                avocados.get(1).setPositionXY(pipes.get(2).getPositionX(), 1000);
+                GET_GOLDEN = false;
+            }
+            if (CARROT_GET_AVOCADO) {
+                SCORE_COUNTER-= 3;
+                avocados.get(0).setPositionXY(pipes.get(2).getPositionX(), 1000);
+                CARROT_GET_AVOCADO = false;
+            } else if (CARROT_GET_GOLDEN) {
+                SCORE_COUNTER-= 5;
+                avocados.get(1).setPositionXY(pipes.get(2).getPositionX(), 1000);
+                CARROT_GET_GOLDEN = false;
+            }
+        }
+        updateScoreLabel(SCORE_COUNTER);
+    }
+
     private void resetGameScene(boolean firstEntry) {
+
+        if(GAME_OVER) {
+            SCORE_COUNTER = 0;
+            LIVES_COUNTER = 3;
+            updateScoreLabel(0);
+            updateLivesLabel(3);
+        }
 
         // reset variables
         CLICKED = false;
         GAME_OVER = false;
         GAME_START = false;
-        PIPE_COLLISION = false;
+        HIT_PIPE = false;
+        GET_AVOCADO = false;
+        GET_GOLDEN = false;
+        AUTOPILOT = false;
+        CARROT_GET_AVOCADO = false;
+        CARROT_GET_GOLDEN = false;
         floors = new ArrayList<>();
         pipes = new ArrayList<>();
+        avocados = new ArrayList<>();
+        carrots = new ArrayList<>();
 
         if(firstEntry) {
+
+            SCORE_COUNTER = 0;
+            LIVES_COUNTER = 3;
+            updateScoreLabel(0);
+            updateLivesLabel(3);
+
             // create two canvases
             Canvas canvas = new Canvas(DEF.SCENE_WIDTH, DEF.SCENE_HEIGHT);
             gc = canvas.getGraphicsContext2D();
 
             // create a background
-            ImageView background = DEF.IMVIEW.get("background");
+            background = DEF.IMVIEW.get("background");
 
             // create the game scene
             gameScene = new Group();
-            gameScene.getChildren().addAll(background, canvas);
+            gameScene.getChildren().addAll(background, canvas, 
+                    DEF.SCORE_LABEL, DEF.LIVES_LABEL);
         }
 
         // initialize floor
@@ -148,29 +250,37 @@ public class AngryFlappyBird extends Application {
             floors.add(floor);
         }
 
+        // initialize koya
+        koya = new Sprite(DEF.KOYA_POS_X, DEF.KOYA_POS_Y,DEF.IMAGE.get("koya0"));
+        koya.render(gc);
+
+        // initialize timer
+        startTime = System.nanoTime();
+        backgroundShiftTime = DEF.BACKGROUND_SHIFT_TIME;
+        timer = new MyTimer();
+        timer.start();
+
         // initialize pipes
         int posX = 0;
         int posY = 0;
-
         for(int i=0; i<DEF.PIPE_COUNT; i++) {
 
             posX = DEF.SCENE_WIDTH + i * DEF.PIPE_GAP;
             posY = new Random().nextInt(DEF.PIPE_MAX_HEIGHT - DEF.PIPE_MIN_HEIGHT + 1) + DEF.PIPE_MIN_HEIGHT;
 
-            Sprite topPipe = new Sprite(posX, posY, DEF.IMAGE.get("pipes-4"));
+            Sprite topPipe = new Sprite(posX, posY, DEF.IMAGE.get("pipe1"));
             topPipe.setVelocity(DEF.SCENE_SHIFT_INCR, 0);
             topPipe.render(gc);
             pipes.add(topPipe);
 
-            Sprite bottomPipe = new Sprite(posX, posY + 300 + DEF.PIPE_HEIGHT, DEF.IMAGE.get("pipes-3"));
+            Sprite bottomPipe = new Sprite(posX, posY + 300 + DEF.PIPE_HEIGHT, DEF.IMAGE.get("pipe0"));
             bottomPipe.setVelocity(DEF.SCENE_SHIFT_INCR, 0);
             bottomPipe.render(gc);
-            pipes.add(bottomPipe);
+            pipes.add(bottomPipe);       
+
         }
 
         // initialize avocados
-        avocados = new ArrayList<>();
-
         Sprite avocado = new Sprite(posX - 300, pipes.get(1).getPositionY() - DEF.AVOCADO_HEIGHT, DEF.IMAGE.get("avocado"));
         avocado.setVelocity(DEF.SCENE_SHIFT_INCR, 0);
         avocado.render(gc);
@@ -181,26 +291,13 @@ public class AngryFlappyBird extends Application {
         golden.render(gc);
         avocados.add(golden);
 
-        // initialize carrots
-
-        carrots = new ArrayList<>();
-
-        Sprite carrot = new Sprite(posX, -100, DEF.IMAGE.get("carrot"));
-        carrot.setVelocity(DEF.SCENE_SHIFT_INCR, 0.2); 
+        //initialize carrot
+        Sprite carrot = new Sprite(posX, posY - 100, DEF.IMAGE.get("carrot"));
+        carrot.setVelocity(DEF.SCENE_SHIFT_INCR, 0.2);
         carrot.render(gc);
         carrots.add(carrot);
 
-
-        // initialize blob
-        blob = new Sprite(DEF.BLOB_POS_X, DEF.BLOB_POS_Y,DEF.IMAGE.get("koya0"));
-        blob.render(gc);
-
-        // initialize timer
-        startTime = System.nanoTime();
-        timer = new MyTimer();
-        timer.start();
     }
-
 
     //timer stuff
     class MyTimer extends AnimationTimer {
@@ -208,7 +305,7 @@ public class AngryFlappyBird extends Application {
         int counter = 0;
 
         @Override
-        public void handle(long now) {   		 
+        public void handle(long now) {           
             // time keeping
             elapsedTime = now - startTime;
             startTime = now;
@@ -217,19 +314,29 @@ public class AngryFlappyBird extends Application {
             gc.clearRect(0, 0, DEF.SCENE_WIDTH, DEF.SCENE_HEIGHT);
 
             if (GAME_START) {
-                // step1: update floor
+                // step1: update floor and pipes
                 moveFloor();
-                // step2: update blob
-                movePipes();
+                movePipe();
+
+                //step2 update avocados and carrots
                 moveAvocado();
                 moveCarrot();
-                moveBlob();
 
-                checkCollision();
+                // step3: update koya
+                moveKoya();
+
+                // step4: check collision
+                if (!AUTOPILOT) {
+                    checkCollision();
+                }
+
+                // step5: update score and change background
+                updateScore();
+                changeBackground();
             }
         }
 
-        // step1: update floor
+        // update floor
         private void moveFloor() {
 
             for(int i=0; i<DEF.FLOOR_COUNT; i++) {
@@ -243,142 +350,200 @@ public class AngryFlappyBird extends Application {
             }
         }
 
-        // step2: update blob
-        private void moveBlob() {
-
-            long diffTime = System.nanoTime() - clickTime;
-
-            // blob flies upward with animation
-
-            if (PIPE_COLLISION) {
-                blob.setVelocity(0, -100); 
-            }
-
-            if (CLICKED && diffTime <= DEF.BLOB_DROP_TIME) {
-
-                int imageIndex = Math.floorDiv(counter++, DEF.BLOB_IMG_PERIOD);
-                imageIndex = Math.floorMod(imageIndex, DEF.BLOB_IMG_LEN);
-                blob.setImage(DEF.IMAGE.get("koya"+String.valueOf(imageIndex)));
-                blob.setVelocity(0, DEF.BLOB_FLY_VEL);
-            }
-            // blob drops after a period of time without button click
-            else {
-                blob.setVelocity(0, DEF.BLOB_DROP_VEL); 
-                CLICKED = false;
-            }
-
-            // render blob on GUI
-            blob.update(elapsedTime * DEF.NANOSEC_TO_SEC);
-            blob.render(gc);
-        }
-
-        private void movePipes() {
-
-            double nextX = 0;
-            double nextY = 0;
-
+        // update pipe
+        private void movePipe() {
             for(int i = 0; i < DEF.PIPE_COUNT; i++) {
 
                 Sprite topPipe = pipes.get(i * 2);
                 Sprite bottomPipe = pipes.get(i * 2 + 1);
 
                 if (topPipe.getPositionX() <= -DEF.PIPE_WIDTH) {
-
-                    nextX = pipes.get((i+1) % DEF.PIPE_COUNT * 2).getPositionX() + 300;
-                    nextY = new Random().nextInt(DEF.PIPE_MAX_HEIGHT - DEF.PIPE_MIN_HEIGHT + 1) + DEF.PIPE_MIN_HEIGHT;
-
+                    double nextX = pipes.get((i+1) % DEF.PIPE_COUNT * 2).getPositionX() + 300;
+                    double nextY = new Random().nextInt(DEF.PIPE_MAX_HEIGHT - DEF.PIPE_MIN_HEIGHT + 1) + DEF.PIPE_MIN_HEIGHT;
                     topPipe.setPositionXY(nextX, nextY);
                     bottomPipe.setPositionXY(nextX, nextY + 500);
-                } 
+                }
 
                 topPipe.update(DEF.SCENE_SHIFT_TIME);
                 bottomPipe.update(DEF.SCENE_SHIFT_TIME);
                 topPipe.render(gc);
                 bottomPipe.render(gc);
+                updateScoreLabel(SCORE_COUNTER);
             }
         }
-    }
 
-    private void moveAvocado() {
+        private void moveKoya() {
 
-        Sprite avocado = avocados.get(0);
-        Sprite golden = avocados.get(1);
+            long diffTime = System.nanoTime() - clickTime;
 
-        if (avocado.getPositionX() <= - DEF.AVOCADO_WIDTH && golden.getPositionX() <= - DEF.AVOCADO_WIDTH) {
+            long diffTimeNow = System.nanoTime();
 
-            int pipeIndex = (int) (Math.random() * 2) + 2;
 
-            double nextX = pipes.get(pipeIndex).getPositionX();
-            double nextY = pipes.get(pipeIndex).getPositionY() - DEF.AVOCADO_HEIGHT;
+            // koya flies upward with animation
+            if (CLICKED && diffTime <= DEF.KOYA_DROP_TIME) {
 
-            int avocadoIndex = (int) Math.round(Math.random());
-
-            if (avocadoIndex == 0)
-                avocado.setPositionXY(nextX, nextY);
-            else if (avocadoIndex == 1)
-                golden.setPositionXY(nextX, nextY);
-        }
-        avocado.update(DEF.SCENE_SHIFT_TIME);
-        avocado.render(gc);
-        golden.update(DEF.SCENE_SHIFT_TIME);
-        golden.render(gc);
-
-    }
-
-    private void moveCarrot() {
-
-        Sprite carrot = carrots.get(0);
-        
-        if (carrot.getPositionX() <= - DEF.CARROT_WIDTH) {
-
-            double random = (Math.random());
-            
-            if (random > 0.6) {
-                double nextX = pipes.get(2).getPositionX();
-                double nextY = -100;
-                carrot.setPositionXY(nextX, nextY);
+                int imageIndex = Math.floorDiv(counter++, DEF.KOYA_IMG_PERIOD);
+                imageIndex = Math.floorMod(imageIndex, DEF.KOYA_IMG_LEN);
+                koya.setImage(DEF.IMAGE.get("koya"+String.valueOf(imageIndex)));
+                koya.setVelocity(0, DEF.KOYA_FLY_VEL);
             }
-            else if (random <= 0.6) {
-                double nextX = pipes.get(2).getPositionX();
-                double nextY = 1000;
-                carrot.setPositionXY(nextX, nextY);
+            // koya drops after a period of time without button click
+            else {
+                koya.setVelocity(0, DEF.KOYA_DROP_VEL); 
+                CLICKED = false;
             }
-        }
-        
-        carrot.update(DEF.SCENE_SHIFT_TIME);
-        carrot.render(gc);
-    }
 
-    public void checkCollision() {
-        // check collision  
-        for (Sprite floor: floors) {
-            GAME_OVER = GAME_OVER || blob.intersectsSprite(floor);
+            // render koya on GUI during normal mode
+
+            koya.update(elapsedTime * DEF.NANOSEC_TO_SEC);
+            koya.render(gc);
+
         }
 
-        for (Sprite pipe: pipes) {
-            GAME_OVER = GAME_OVER || blob.intersectsSprite(pipe);
+
+        private void moveAvocado() {
+            Sprite avocado = avocados.get(0);
+            Sprite golden = avocados.get(1);
+
+            if (avocado.getPositionX() <= - DEF.AVOCADO_WIDTH && golden.getPositionX() <= - DEF.AVOCADO_WIDTH) {
+
+                int pipeIndex = (int) (Math.random() * 2) + 2;
+
+                double nextX = pipes.get(pipeIndex).getPositionX();
+                double nextY = pipes.get(pipeIndex).getPositionY() - DEF.AVOCADO_HEIGHT;
+
+                double avocadoIndex = Math.random();
+                System.out.println(avocadoIndex);
+
+                if (avocadoIndex < 0.5)
+                    avocado.setPositionXY(nextX, nextY);
+                else if (avocadoIndex >= 0.5)
+                    golden.setPositionXY(nextX, nextY);
+            }
+
+            avocado.update(DEF.SCENE_SHIFT_TIME);
+            avocado.render(gc);
+            golden.update(DEF.SCENE_SHIFT_TIME);
+            golden.render(gc);
+
+            GET_AVOCADO = GET_AVOCADO || koya.intersectsSprite(avocado);
+            GET_GOLDEN = GET_GOLDEN || koya.intersectsSprite(golden);
         }
 
-        // end the game when blob hit stuff
-        if (GAME_OVER) {
-            showHitEffect(); 
+        private void moveCarrot() {
+            Sprite carrot = carrots.get(0);
+
+            String difficulty = difficultyMenu.getValue();
+
+            if (carrot.getPositionX() <= - DEF.CARROT_WIDTH) {
+                double random = (Math.random());
+                double nextX = 0; 
+                double nextY = 0;
+
+                if (difficulty.equals("Easy")) {
+                    if (random > 0.7) {
+                        nextX =  pipes.get(2).getPositionX();
+                        nextY =  pipes.get(2).getPositionY() - 100;
+                        carrot.setPositionXY(nextX, nextY);
+                    } else if (random <= 0.7) {
+                        nextX = pipes.get(2).getPositionX();
+                        nextY = 1000;
+                        carrot.setPositionXY(nextX, nextY);
+                    }
+                }
+                else if (difficulty.equals("Medium")) {
+                    if (random > 0.2) {
+                        nextX =  pipes.get(2).getPositionX();
+                        nextY =  pipes.get(2).getPositionY();
+                        carrot.setPositionXY(nextX, nextY);
+                    } else if (random <= 0.2) {
+                        nextX = pipes.get(2).getPositionX();
+                        nextY = 1000;
+                        carrot.setPositionXY(nextX, nextY);
+                    }
+                }
+                else if (difficulty.equals("Difficult")) {
+                    if (random > 0.1) {
+                        nextX =  pipes.get(2).getPositionX();
+                        nextY =  0 ;
+                        carrot.setPositionXY(nextX, nextY);
+                    } else if (random <= 0.1) {
+                        nextX = pipes.get(2).getPositionX();
+                        nextY = 1000;
+                        carrot.setPositionXY(nextX, nextY);
+                    }
+                }        
+            }
+            carrot.update(DEF.SCENE_SHIFT_TIME);
+            carrot.render(gc);
+        }
+
+
+
+        public void checkCollision() {
+            // check floor collision  
             for (Sprite floor: floors) {
-                floor.setVelocity(0, 0);
+                GAME_OVER = GAME_OVER || koya.intersectsSprite(floor);
             }
-            timer.stop();
+
+            // check carrot collision
+            for (Sprite carrot : carrots) {
+                GAME_OVER = GAME_OVER || koya.intersectsSprite(carrot);
+            }
+
+            // check pipe collision
+            for (Sprite pipe : pipes) {
+                HIT_PIPE = HIT_PIPE || koya.intersectsSprite(pipe);
+                if (HIT_PIPE) { // not working correctly
+                    if (LIVES_COUNTER > 1) {
+                        LIVES_COUNTER -= 1;
+                        updateLivesLabel(LIVES_COUNTER);
+                        timer.stop();
+                        resetGameScene(false);
+                    } else {
+                        updateLivesLabel(0);
+                        GAME_OVER = true;
+                    }            
+                }
+            }
+
+            // end the game when koya hit floors or hit pipes more than 3 times
+            if (GAME_OVER) {
+                showHitEffect(); 
+                for (Sprite floor: floors) {
+                    floor.setVelocity(0, 0);
+                }
+                for(Sprite pipe: pipes) {
+                    pipe.setVelocity(0, 0);
+                }
+                timer.stop();
+            }
         }
-    }
 
-    private void showHitEffect() {
-        ParallelTransition parallelTransition = new ParallelTransition();
-        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(DEF.TRANSITION_TIME), gameScene);
-        fadeTransition.setToValue(0);
-        fadeTransition.setCycleCount(DEF.TRANSITION_CYCLE);
-        fadeTransition.setAutoReverse(true);
-        parallelTransition.getChildren().add(fadeTransition);
-        parallelTransition.play();
-    }
+        private void changeBackground() {
+            long now = System.nanoTime();
+            float time = (now - backgroundShiftTime)/1000000000;
+            if  (time > DEF.BACKGROUND_SHIFT_TIME) {
+                if (background.getImage() == DEF.IMAGE.get("background")) {
+                    background.setImage(DEF.IMAGE.get("background-night"));
+                } else if (background.getImage() == DEF.IMAGE.get("background-night")) {
+                    background.setImage(DEF.IMAGE.get("background"));
+                }
+                backgroundShiftTime = System.nanoTime();
+            }
+        }
 
+        private void showHitEffect() {
+            ParallelTransition parallelTransition = new ParallelTransition();
+            FadeTransition fadeTransition = new FadeTransition(Duration.seconds(DEF.TRANSITION_TIME), gameScene);
+            fadeTransition.setToValue(0);
+            fadeTransition.setCycleCount(DEF.TRANSITION_CYCLE);
+            fadeTransition.setAutoReverse(true);
+            parallelTransition.getChildren().add(fadeTransition);
+            parallelTransition.play();
+        }
 
-}
-// End of AngryFlappyBird Class
+    } // End of MyTimer class
+
+} // End of AngryFlappyBird Class
+
