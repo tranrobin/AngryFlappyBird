@@ -1,4 +1,3 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/BZ2B4lzd)
 # AngryFlappyBird
 Implementation of the game Flappy Bird and Angry Bird using JavaFX
 
@@ -40,3 +39,8 @@ Setup
    $ git clone https://github.com/MHC-SP23-CS225/angryflappybird-teampocky.git
    ```
    or download as zip and extract.
+   
+5. Open the repository in Eclipse.
+  * Click on File > Import > Projects from Git > Existing Local Repository 
+  * Add [Navigate to the local repository's location] > Select [Added repository] > Next > Finish
+  * Make sure the follow the Eclipse Configurations to bind with Java and JavaFX in Step 3
