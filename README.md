@@ -44,3 +44,23 @@ Setup
   * Click on File > Import > Projects from Git > Existing Local Repository 
   * Add [Navigate to the local repository's location] > Select [Added repository] > Next > Finish
   * Make sure to follow the Eclipse Configurations to bind with Java and JavaFX in Step 3
+  
+  
+  
+How to play
+---------------------------
+* The player uses the button to control the Koya’s flight. The Koya is supposed to avoid all obstacles (including pipes, floors and carrots) while collecting as many avocados as possible. 
+* If a carrot collects an avocado, 1 point will be lost. If the Koya collects a green avocado, 5 points will be added. If the Koya collects a golden avocado, it will go into autopilot mode and will not collide with any objects.
+* If the Koya hits a pipe, 1 point will be lost. If the Koya hits the floor or a carrot, the game is over.
+* There are 3 difficulty levels. The harder the game is, the more carrots will appear.
+
+
+Contributors
+---------------------------
+* Professor Su (source codes)
+* Robin Tran
+* Jennifer Pham
+
+Resources
+---------------------------
+Images and audios are collected from Google.
