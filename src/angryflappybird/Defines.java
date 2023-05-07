@@ -45,14 +45,12 @@ public class Defines {
     // coefficients related to the pipes
     final int PIPE_WIDTH = 100;
     final int PIPE_HEIGHT = 210;
-    final int PIPE_MAX_HEIGHT = 10;
+    final int PIPE_MAX_HEIGHT = -20;
     final int PIPE_MIN_HEIGHT = -120;
     final int PIPE_GAP = 300;
     final int PIPE_COUNT = 2;
 
-    final int PIPE_MIN_HEIGHT = -120;
-    final int PIPE_MAX_HEIGHT = -20;
-    final int PIPE_POS_X = 500;
+    //coefficients related to avocados
     final int AVOCADO_WIDTH = 100;
     final int AVOCADO_HEIGHT = 100;
     final int AVOCADO_COUNT = 2;
