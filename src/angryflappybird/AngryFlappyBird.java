@@ -506,12 +506,6 @@ public class AngryFlappyBird extends Application {
                 koya.setVelocity(0, DEF.KOYA_DROP_VEL);
                 CLICKED = false;
             }
-            
-            for (Sprite carrot : carrots) {
-                if (koya.intersectsSprite(carrot)) {
-                    koya.setVelocity(-70,70);
-                }
-            }
 
             // render koya on GUI
             koya.update(elapsedTime * DEF.NANOSEC_TO_SEC);
