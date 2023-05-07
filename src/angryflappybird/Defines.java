@@ -31,30 +31,33 @@ public class Defines {
     final int KOYA_HEIGHT = 80;
     final int KOYA_POS_X = 70;
     final int KOYA_POS_Y = 200;
-    final int KOYA_DROP_TIME = 300000000;   // the elapsed time threshold before the koya starts dropping
-    final int KOYA_DROP_VEL = 300;          // the koya drop velocity
+    final int KOYA_DROP_TIME = 300000000;  	// the elapsed time threshold before koya starts dropping
+    final int KOYA_DROP_VEL = 300;    		// koya drop velocity
     final int KOYA_FLY_VEL = -40;
     final int KOYA_IMG_LEN = 4;
     final int KOYA_IMG_PERIOD = 5;
-
+    
     // coefficients related to the floors
     final int FLOOR_WIDTH = 400;
-    final int FLOOR_HEIGHT = 80;
+    final int FLOOR_HEIGHT = 100;
     final int FLOOR_COUNT = 2;
-
+    
     // coefficients related to the pipes
     final int PIPE_WIDTH = 100;
     final int PIPE_HEIGHT = 210;
+    final int PIPE_MAX_HEIGHT = 10;
+    final int PIPE_MIN_HEIGHT = -120;
     final int PIPE_GAP = 300;
     final int PIPE_COUNT = 2;
+
     final int PIPE_MIN_HEIGHT = -120;
     final int PIPE_MAX_HEIGHT = -20;
     final int PIPE_POS_X = 500;
-
     final int AVOCADO_WIDTH = 100;
     final int AVOCADO_HEIGHT = 100;
     final int AVOCADO_COUNT = 2;
-
+    
+    // coefficients related to carrot
     final int CARROT_WIDTH = 100;
     final int CARROT_HEIGHT = 100;
 
@@ -84,7 +87,7 @@ public class Defines {
 
     // coefficients related to media display
     final String STAGE_TITLE = "Angry Flappy Bird";
-    private final String IMAGE_DIR = "../resources/images/";
+	private final String IMAGE_DIR = "../resources/images/";
     final String[] IMAGE_FILES = {"background","koya0", "koya1", "koya2", "koya3", 
             "pipe0", "pipe1", "floor", "avocado", "yellowavocado", "carrot", "background-night", "koya"};
 

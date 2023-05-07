@@ -5,7 +5,6 @@ import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -155,6 +154,7 @@ public class AngryFlappyBird extends Application {
      * Method to handle mouse click events
      * @param e
      */
+     
     private void mouseClickHandler(MouseEvent e) {
 
         // check if the game is over and reset the game scene if it is
@@ -184,6 +184,10 @@ public class AngryFlappyBird extends Application {
     private void updateLivesLabel(int lives) {
         DEF.LIVES_LABEL.setText(Integer.toString(lives) + " lives left");
     }
+    
+//    private void updateTimerLabel(int time) {
+//        DEF.TIMER_LABEL.setText(Integer.toString(time) + " secs to go");
+//    }
 
     /**
      * Method to update the score after different events, such as when the Koya passes 
@@ -263,7 +267,7 @@ public class AngryFlappyBird extends Application {
             // update the score and lives label with the initial values
             updateScoreLabel(0);
             updateLivesLabel(3);
-
+            
             // create two canvases
             Canvas canvas = new Canvas(DEF.SCENE_WIDTH, DEF.SCENE_HEIGHT);
             gc = canvas.getGraphicsContext2D();
@@ -327,7 +331,7 @@ public class AngryFlappyBird extends Application {
             pipes.add(bottomPipe);
 
         }
-
+        
         // initialize avocados
         Sprite avocado = new Sprite(posX - 300,
                 pipes.get(1).getPositionY() - DEF.AVOCADO_HEIGHT,
@@ -349,7 +353,6 @@ public class AngryFlappyBird extends Application {
         carrot.render(gc);
         carrots.add(carrot);
         carrots.add(carrot);
-
     }
 
     /**
@@ -393,12 +396,12 @@ public class AngryFlappyBird extends Application {
 
                 // step3: update koya
                 moveKoya();
-
+                
                 // step4: check collision
                 if (!GET_GOLDEN) {
                     checkCollision();
                 }
-
+                
                 // step5: update score and change background
                 updateScore();
                 changeBackground();
@@ -496,18 +499,24 @@ public class AngryFlappyBird extends Application {
                 DEF.AUDIO.get("hit").play();
                 koya.setVelocity(-500, 500);
             }
-
+            
             // koya drops after a period of time without button click
             else {
                 koya.setVelocity(0, DEF.KOYA_DROP_VEL);
                 CLICKED = false;
+            }
+            
+            for (Sprite carrot : carrots) {
+                if (koya.intersectsSprite(carrot)) {
+                    koya.setVelocity(-70,70);
+                }
             }
 
             // render koya on GUI
             koya.update(elapsedTime * DEF.NANOSEC_TO_SEC);
             koya.render(gc);
         }
-
+        
         /**
          * Update the avocados throughout the game
          */
@@ -531,7 +540,7 @@ public class AngryFlappyBird extends Application {
                 else if (avocadoIndex == 1)
                     golden.setPositionXY(nextX, nextY);
             }
-
+            
             avocado.update(DEF.SCENE_SHIFT_TIME);
             avocado.render(gc);
             golden.update(DEF.SCENE_SHIFT_TIME);
@@ -600,6 +609,7 @@ public class AngryFlappyBird extends Application {
                     }
                 }
             }
+            
             carrot.update(DEF.SCENE_SHIFT_TIME);
             carrot.render(gc);
         }
@@ -633,6 +643,7 @@ public class AngryFlappyBird extends Application {
                     avocado.setVelocity(0, 0);
                 }
             }
+            
             // update lives
             if (HIT_PIPE && koya.getPositionX() < -DEF.KOYA_WIDTH) {
                 LIVES_COUNTER--;
@@ -650,7 +661,6 @@ public class AngryFlappyBird extends Application {
          * and update GAME OVER accordingly
          */
         private void checkCollisionWithCarrot() {
-
             // check carrot collision
             if (koya.intersectsSprite(carrots.get(0))) {
 
