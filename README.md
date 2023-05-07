@@ -43,4 +43,4 @@ Setup
 5. Open the repository in Eclipse.
   * Click on File > Import > Projects from Git > Existing Local Repository 
   * Add [Navigate to the local repository's location] > Select [Added repository] > Next > Finish
-  * Make sure the follow the Eclipse Configurations to bind with Java and JavaFX in Step 3
+  * Make sure to follow the Eclipse Configurations to bind with Java and JavaFX in Step 3
