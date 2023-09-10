@@ -2,6 +2,11 @@
 Implementation of the game Flappy Bird and Angry Bird using JavaFX
 
 
+
+https://github.com/tranrobin/AngryFlappyBird/assets/102487760/2b907724-9b1e-4927-9bcd-014f4264c31e
+
+
+
 Setup
 ---------------------------
 1. Install Java version 11 or higher.
